@@ -1,10 +1,47 @@
 import argparse
 import os
 import random
-import PIL.Image as Image
-import numpy as np
+import math
 from collections import defaultdict
+
+import numpy as np
+import PIL.Image as Image
 from tqdm import tqdm, trange
+
+
+def generate1(dir, size, rand):
+    print(f"正在拼接尺寸：{size}...")
+    nums = len(os.listdir(dir))
+    nums_width = int(math.sqrt(nums))
+    nums_height = int((nums + nums_width - 1) / nums_width)
+    img_width = nums_width * size
+    img_height = nums_height * size
+
+    image = Image.new("RGB", (img_width, img_height), "white")
+    x = 0
+    y = 0
+
+    files = os.listdir(dir)
+    if rand:
+        random.shuffle(files)
+
+    for i in tqdm(files):
+        try:
+            img = Image.open(os.path.join(dir, i))
+        except IOError:
+            print(i)
+            print("图像打开失败")
+        else:
+            img = img.resize((size, size), Image.ANTIALIAS)
+            image.paste(img, (x * size, y * size))
+            x += 1
+            if x == nums_width:
+                x = 0
+                y += 1
+            img.close()
+
+    image.save(f"avatar_{size}.jpg")
+    image.close()
 
 
 def mean_pixel(colors):
@@ -12,8 +49,8 @@ def mean_pixel(colors):
     return int(np.mean(colors))
 
 
-def generate(dir, source, size, rand):
-    print(f"generating size {size}...")
+def generate2(dir, source, size, rand):
+    print(f"正在拼接尺寸：{size}...")
 
     files = os.listdir(dir)
     if rand:
@@ -32,7 +69,7 @@ def generate(dir, source, size, rand):
             img = Image.open(os.path.join(dir, i))
         except IOError:
             print(i)
-            print("image open error")
+            print("图像打开失败")
         else:
             img = img.convert("RGB")
             img = img.resize((size, size), Image.ANTIALIAS)
@@ -77,7 +114,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "--dir", "-d", type=str, default="avatar", help="directory of the avatars"
     )
-    parser.add_argument("--img", "-i", type=str, help="source image to be coverd")
+    parser.add_argument(
+        "--img", "-i", type=str, default="", help="source image to be coverd"
+    )
     parser.add_argument(
         "--size",
         "-s",
@@ -94,4 +133,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     sizes = [int(s) for s in args.size.split(",")]
     for size in sizes:
-        generate(args.dir, args.img, size, args.rand)
+        if len(args.img) == 0:
+            generate1(args.dir, size, args.rand)
+        else:
+            generate2(args.dir, args.img, size, args.rand)
