@@ -1,4 +1,4 @@
-# image_stitch
+# Image Stitch
 stitch multiple images into one big image
 
 ## Usage
