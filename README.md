@@ -1,5 +1,5 @@
 # Image Stitch
-stitch multiple images into one big image
+Stitch multiple images into one big image
 
 ## Usage
 ```python
