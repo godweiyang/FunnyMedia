@@ -14,18 +14,18 @@
 
 ### 使用方法
 **多张图片拼凑成一张大的矩形图片：**
-```python
+```shell
 python3 image_stitch.py -d [图像合集目录] -s [小图最终的边长] -r
 ```
 
 **多张图片拼凑出另一张图片：**
-```python
+```shell
 python3 image_stitch.py -d [图像合集目录] -i [待拼凑的图片] -s [小图最终的边长] -r
 ```
 
 > 实测`-s`设置为30效果最佳，图片大小和质量都比较好。`-r`是随机排列图片。
 
 **生成字符视频：**
-```python
+```shell
 python3 video2char.py
 ```
