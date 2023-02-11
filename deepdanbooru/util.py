@@ -5,9 +5,7 @@ import torch
 LANCZOS = Image.Resampling.LANCZOS if hasattr(Image, "Resampling") else Image.LANCZOS
 
 
-def tag(image_path, model):
-    img = Image.open(image_path).convert("RGB")
-
+def tag(img, model):
     pic = resize_image(img, 512, 512)
     a = np.expand_dims(np.array(pic, dtype=np.float32), 0) / 255
 
