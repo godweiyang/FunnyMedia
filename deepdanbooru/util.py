@@ -9,7 +9,7 @@ def tag(img, model):
     pic = resize_image(img, 512, 512)
     a = np.expand_dims(np.array(pic, dtype=np.float32), 0) / 255
 
-    with torch.no_grad(), torch.autocast("cuda:0"):
+    with torch.no_grad(), torch.autocast("cuda"):
         x = torch.from_numpy(a).to("cuda:0")
         y = model(x)[0].detach().cpu().numpy()
 
