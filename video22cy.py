@@ -1,17 +1,31 @@
 import os
 from tqdm import trange
+import wget
 import cv2
 from PIL import Image
 from moviepy.editor import VideoFileClip
+import torch
 from diffusers import StableDiffusionImg2ImgPipeline
+from deepdanbooru.model import DeepDanbooruModel
+from deepdanbooru.util import tag
 
 
 class V22cy:
     def __init__(self, video_path, model_id="cag/anything-v3-1"):
         self.video_path = video_path
-        self.pipe = StableDiffusionImg2ImgPipeline.from_pretrained(model_id).to(
-            "cuda:0"
+        self.pipe = StableDiffusionImg2ImgPipeline.from_pretrained(model_id)
+        self.pipe.to("cuda:0")
+        self.tag_model = DeepDanbooruModel()
+        if not os.path.exists("model-resnet_custom_v3.pt"):
+            wget.download(
+                "https://github.com/AUTOMATIC1111/TorchDeepDanbooru/releases/download/v1/model-resnet_custom_v3.pt"
+            )
+        self.tag_model.load_state_dict(
+            torch.load("model-resnet_custom_v3.pt", map_location="cpu")
         )
+        self.tag_model.eval()
+        self.tag_model.half()
+        self.tag_model.to("cuda:0")
 
     def read_video(self):
         print("正在读取视频信息并抽帧...")
@@ -32,7 +46,7 @@ class V22cy:
             os.mkdir("frames-2cy")
         for idx in trange(self.nframe):
             init_img = Image.open(f"frames/{idx}.png").convert("RGB")
-            prompt = "a beautiful girl"
+            prompt = tag(init_img, self.tag_model)
             negative_prompt = "Low Quality, Bad Anatomy"
             img = self.pipe(
                 prompt=prompt,
