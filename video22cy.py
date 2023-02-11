@@ -30,8 +30,7 @@ class V22cy:
     def read_video(self):
         print("正在读取视频信息并抽帧...")
         cap = cv2.VideoCapture(self.video_path)
-        # self.nframe = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-        self.nframe = 2
+        self.nframe = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
         self.fps = cap.get(cv2.CAP_PROP_FPS)
         if not os.path.exists("frames"):
             os.mkdir("frames")
