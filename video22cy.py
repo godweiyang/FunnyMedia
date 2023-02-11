@@ -5,7 +5,7 @@ import cv2
 from PIL import Image
 from moviepy.editor import VideoFileClip
 import torch
-from diffusers import StableDiffusionImg2ImgPipeline
+from diffusers import StableDiffusionImg2ImgPipeline, DDIMScheduler
 from deepdanbooru.model import DeepDanbooruModel
 from deepdanbooru.util import tag
 
@@ -14,6 +14,7 @@ class V22cy:
     def __init__(self, video_path, model_id="cag/anything-v3-1"):
         self.video_path = video_path
         self.pipe = StableDiffusionImg2ImgPipeline.from_pretrained(model_id)
+        self.pipe.scheduler = DDIMScheduler.from_config(self.pipe.scheduler.config)
         self.pipe.to("cuda:0")
         self.tag_model = DeepDanbooruModel()
         if not os.path.exists("model-resnet_custom_v3.pt"):
