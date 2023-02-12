@@ -1,6 +1,6 @@
 import os
-from tqdm import trange
 import wget
+from tqdm import trange
 import cv2
 from PIL import Image
 from moviepy.editor import VideoFileClip
@@ -33,30 +33,31 @@ class V22cy:
         cap = cv2.VideoCapture(self.video_path)
         self.nframe = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
         self.fps = cap.get(cv2.CAP_PROP_FPS)
+        self.gen_num = int(self.fps * 3)
         if not os.path.exists("frames"):
             os.mkdir("frames")
-        for idx in trange(self.nframe):
-            frame = cv2.cvtColor(cap.read()[1], cv2.COLOR_BGR2RGB)
-            img = Image.fromarray(frame).convert("RGB")
-            img.save(f"frames/{idx}.png")
+        # for idx in trange(self.nframe):
+        #     frame = cv2.cvtColor(cap.read()[1], cv2.COLOR_BGR2RGB)
+        #     img = Image.fromarray(frame).convert("RGB")
+        #     img.save(f"frames/{idx}.png")
         cap.release()
 
     def img2img(self):
         print("正在生成二次元图像...")
         if not os.path.exists("frames-2cy"):
             os.mkdir("frames-2cy")
-        for idx in trange(self.nframe):
-            init_img = Image.open(f"frames/{idx}.png").convert("RGB")
-            prompt = tag(init_img, self.tag_model)
-            negative_prompt = "Low Quality, Bad Anatomy"
+        init_img = Image.open(f"frames/0.png").convert("RGB")
+        prompt = tag(init_img, self.tag_model)
+        negative_prompt = "Low Quality, Bad Anatomy"
+        for idx in trange(self.gen_num):
             img = self.pipe(
                 prompt=prompt,
                 negative_prompt=negative_prompt,
                 image=init_img,
                 num_inference_steps=20,
-                strength=0.5,
+                strength=(0.5 - 0.8) / (self.gen_num - 1) * idx + 0.8,
                 guidance_scale=7,
-                eta=0.0,
+                eta=1.0,
             ).images[0]
             img.save(f"frames-2cy/{idx}.png")
 
@@ -65,8 +66,12 @@ class V22cy:
         im = Image.open(f"frames-2cy/0.png")
         fourcc = cv2.VideoWriter_fourcc("m", "p", "4", "v")
         vw = cv2.VideoWriter("tmp.mp4", fourcc, self.fps, im.size)
-        for idx in trange(self.nframe):
+        for idx in trange(self.gen_num):
             img_url = f"frames-2cy/{idx}.png"
+            frame = cv2.imread(img_url)
+            vw.write(frame)
+        for idx in trange(self.nframe):
+            img_url = f"frames/{idx}.png"
             frame = cv2.imread(img_url)
             vw.write(frame)
         vw.release()
